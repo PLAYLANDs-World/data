@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie & TV Series Info | Professional Fetcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #141414;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            margin: 20px 0 10px;
+            background: linear-gradient(to right, #e50914, #b20710);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8c8c8c;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            font-weight: 300;
+        }
+        
+        .search-container {
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #fff;
+            font-size: 1.1rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #e50914;
+        }
+        
+        input::placeholder {
+            color: #b3b3b3;
+        }
+        
+        button {
+            background: linear-gradient(to right, #e50914, #b20710);
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(229, 9, 20, 0.4);
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(229, 9, 20, 0.6);
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .example {
+            background: rgba(50, 50, 50, 0.5);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+        }
+        
+        .example:hover {
+            background: rgba(80, 80, 80, 0.5);
+            transform: translateY(-3px);
+            border-color: #555;
+        }
+        
+        .result-container {
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .movie-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .poster {
+            width: 160px;
+            height: 240px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+        
+        .movie-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .movies-info-rate {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+        
+        .imdb-logo, .rated-pg13, .release-year, .movie-time {
+            background: rgba(50, 50, 50, 0.8);
+            padding: 8px 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .imdb-logo {
+            background: linear-gradient(to right, #f5c518, #d4af37);
+            color: #000;
+            font-weight: 600;
+        }
+        
+        .movie-description {
+            margin: 25px 0;
+            line-height: 1.7;
+            color: #e5e5e5;
+            font-size: 1.05rem;
+        }
+        
+        .movies-info-genre {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .genre {
+            background: rgba(80, 80, 80, 0.5);
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            border: 1px solid #444;
+        }
+        
+        .content-rating-detail {
+            margin-top: 35px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+            border-left: 4px solid #e50914;
+        }
+        
+        .content-rating-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .rating-explanation {
+            font-size: 1rem;
+            color: #d0d0d0;
+            line-height: 1.6;
+            padding: 15px;
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 6px;
+            border-left: 3px solid #e50914;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #e50914;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 18px;
+            border-radius: 6px;
+            margin: 20px 0;
+            display: none;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+        
+        .copy-btn {
+            background: rgba(50, 50, 50, 0.8);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 1rem;
+            border: 1px solid #444;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(80, 80, 80, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #8c8c8c;
+            font-size: 0.9rem;
+            width: 100%;
+            padding: 20px 0;
+            border-top: 1px solid #333;
+        }
+        
+        @media (max-width: 768px) {
+            .movie-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .poster {
+                width: 140px;
+                height: 210px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Movie & TV Series Info Fetcher</h1>
+            <p class="subtitle">Enter any IMDb ID to fetch detailed information about movies and TV series</p>
+        </header>
+        
+        <div class="search-container">
+            <div class="input-group">
+                <input type="text" id="imdbId" placeholder="Enter IMDb ID (e.g. tt1285016)">
+                <button id="fetchBtn"><i class="fas fa-search"></i> Fetch Data</button>
+            </div>
+            
+            <div class="examples">
+                <div class="example" onclick="setExample('tt1285016')">The Social Network</div>
+                <div class="example" onclick="setExample('tt0816692')">Interstellar</div>
+                <div class="example" onclick="setExample('tt0111161')">The Shawshank Redemption</div>
+                <div class="example" onclick="setExample('tt0944947')">Game of Thrones</div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching movie data...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="movie-header">
+                <img id="poster" class="poster" src="" alt="Movie Poster">
+                <div>
+                    <h2 class="movie-title" id="title"></h2>
+                    <div class="movies-info-rate">
+                        <div class="imdb-logo"><i class="fab fa-imdb"></i> <span id="imdbRating"></span></div>
+                        <div class="rated-pg13" id="rated"></div>
+                        <div class="release-year" id="year"></div>
+                        <div class="movie-time" id="runtime"></div>
+                    </div>
+                    <p class="movie-description" id="plot"></p>
+                    <div class="movies-info-genre" id="genres"></div>
+                </div>
+            </div>
+            
+            <div class="content-rating-detail">
+                <h3 class="content-rating-title"><i class="fas fa-exclamation-triangle"></i> Rating Explanation</h3>
+                <p class="rating-explanation" id="ratingExplanation"></p>
+            </div>
+            
+            <button class="copy-btn" onclick="copyToClipboard()">
+                <i class="fas fa-copy"></i> Copy HTML Structure
+            </button>
+        </div>
+        
+        <footer>
+            <p>Powered by OMDB API • Professional Movie & TV Series Information Fetcher</p>
+        </footer>
+    </div>
+    
+    <script>
+        const apiKey = '5b9b7798'; // Free OMDB API key
+        const fetchBtn = document.getElementById('fetchBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const loading = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        
+        // Set example IMDb ID
+        function setExample(id) {
+            document.getElementById('imdbId').value = id;
+            fetchData(id);
+        }
+        
+        // Convert runtime to "Hh mm" format
+        function formatRuntime(runtime) {
+            if (!runtime || runtime === "N/A") return "N/A";
+            
+            const match = runtime.match(/\d+/);
+            if (!match) return runtime;
+            
+            const minutes = parseInt(match[0]);
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            
+            if (hours > 0) {
+                return `${hours}h ${remainingMinutes}m`;
+            }
+            return `${minutes}m`;
+        }
+        
+        // Generate rating explanation
+        function generateRatingExplanation(rating) {
+            const explanations = {
+                "G": "Rated G: General Audiences. All ages admitted. Contains nothing that would offend parents for viewing by children.",
+                "PG": "Rated PG: Parental Guidance Suggested. Some material may not be suitable for children. May contain some mild language and thematic elements.",
+                "PG-13": "Rated PG-13: Parents Strongly Cautioned. Some material may be inappropriate for children under 13. May contain violence, brief strong language, and suggestive content.",
+                "R": "Rated R: Restricted. Children under 17 require accompanying parent or adult guardian. Contains adult material such as intense violence, graphic language, sexual content and/or drug abuse.",
+                "NC-17": "Rated NC-17: Adults Only. No one 17 and under admitted. Contains explicit sexual content, extreme violence, or other adult themes.",
+                "TV-Y": "Rated TV-Y: Appropriate for all children. Designed to be appropriate for preschool children.",
+                "TV-Y7": "Rated TV-Y7: Designed for children age 7 and above. May contain mild fantasy violence or comedic violence.",
+                "TV-G": "Rated TV-G: Suitable for all ages. Contains little or no violence, no strong language, and little or no sexual content.",
+                "TV-PG": "Rated TV-PG: Parental guidance suggested. May contain moderate violence, some sexual situations, infrequent coarse language, or suggestive dialogue.",
+                "TV-14": "Rated TV-14: Parents strongly cautioned. May contain intense violence, strong sexual content, strong language, or suggestive dialogue.",
+                "TV-MA": "Rated TV-MA: Mature audiences only. May contain explicit sexual content, graphic violence, or crude language."
+            };
+            
+            return explanations[rating] || `Rated ${rating}: The content rating indicates material that may be suitable for certain audiences.`;
+        }
+        
+        // Fetch movie data
+        async function fetchData(imdbId) {
+            // Show loading, hide results and clear error
+            loading.style.display = 'block';
+            resultContainer.style.display = 'none';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`);
+                const data = await response.json();
+                
+                if (data.Response === 'True') {
+                    displayMovieData(data);
+                } else {
+                    throw new Error(data.Error || 'Movie not found!');
+                }
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Display movie data in the UI
+        function displayMovieData(movie) {
+            document.getElementById('title').textContent = `${movie.Title} (${movie.Type === 'series' ? 'TV Series' : 'Movie'})`;
+            document.getElementById('imdbRating').textContent = movie.imdbRating;
+            document.getElementById('rated').textContent = movie.Rated;
+            document.getElementById('year').textContent = movie.Year;
+            document.getElementById('runtime').textContent = formatRuntime(movie.Runtime);
+            document.getElementById('plot').textContent = movie.Plot;
+            
+            // Set poster image
+            const poster = document.getElementById('poster');
+            poster.src = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/150x220/333333/cccccc?text=No+Poster';
+            poster.alt = `${movie.Title} Poster`;
+            
+            // Display genres (only first three)
+            const genresContainer = document.getElementById('genres');
+            genresContainer.innerHTML = '';
+            const genres = movie.Genre ? movie.Genre.split(', ').slice(0, 3) : [];
+            
+            genres.forEach(genre => {
+                const genreEl = document.createElement('span');
+                genreEl.className = 'genre';
+                genreEl.textContent = genre;
+                genresContainer.appendChild(genreEl);
+            });
+            
+            // Display rating explanation
+            document.getElementById('ratingExplanation').textContent = generateRatingExplanation(movie.Rated);
+            
+            // Show the result container
+            resultContainer.style.display = 'block';
+        }
+        
+        // Show error message
+        function showError(message) {
+            errorDiv.textContent = `Error: ${message}`;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Copy HTML structure to clipboard
+        function copyToClipboard() {
+            const htmlStructure = `
+<div class="movies-info-rate">
+    <div class="imdb-logo">IMDb ${document.getElementById('imdbRating').textContent}</div>
+    <div class="rated-pg13">${document.getElementById('rated').textContent}</div>
+    <div class="release-year">${document.getElementById('year').textContent}</div>
+    <div class="movie-time">${document.getElementById('runtime').textContent}</div>
+</div>
+<p>${document.getElementById('plot').textContent}</p>
+<div class="movies-info-genre">
+    ${Array.from(document.querySelectorAll('.genre'))
+        .map(el => `<span class="genre">${el.textContent}</span>`)
+        .join('\n    ')}
+</div>
+
+
+<!-- Content Rating Detail -->
+<div class="content-rating-detail">
+    <p class="rating-explanation">${document.getElementById('ratingExplanation').textContent}</p>
+</div>`;
+            
+            navigator.clipboard.writeText(htmlStructure)
+                .then(() => {
+                    const btn = document.querySelector('.copy-btn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied Successfully!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    alert('Failed to copy: ' + err);
+                });
+        }
+        
+        // Event listeners
+        fetchBtn.addEventListener('click', () => {
+            const imdbId = document.getElementById('imdbId').value.trim();
+            if (imdbId) {
+                fetchData(imdbId);
+            } else {
+                showError('Please enter an IMDb ID');
+            }
+        });
+        
+        // Initialize with an example
+    </script>
+</body>
+</html>

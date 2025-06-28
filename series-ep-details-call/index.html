@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Series Seasons & Episodes Fetcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(90deg, #ff6b6b, #ffa502, #ff6b6b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        button {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #ff6b6b, #ffa502);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+            background: linear-gradient(90deg, #ff5252, #ff9400);
+        }
+        
+        .results-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .shows-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            max-height: 500px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .json-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .shows-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        
+        .show-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .show-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .show-card.active {
+            transform: translateY(-5px);
+            box-shadow: 0 0 0 3px #ff6b6b, 0 10px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .show-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .show-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        .show-info {
+            padding: 15px;
+        }
+        
+        .show-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .show-year {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .json-output {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            height: 400px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #4CAF50, #2E7D32);
+            font-size: 1rem;
+        }
+        
+        .copy-btn:hover {
+            background: linear-gradient(90deg, #45a049, #1B5E20);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #ff6b6b;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .tmdb-logo {
+            width: 100px;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .results-container {
+                flex-direction: column;
+            }
+            
+            .shows-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TV Series Seasons & Episodes Fetcher</h1>
+            <p class="subtitle">Search for TV shows and get detailed season & episode information in JSON format</p>
+        </header>
+        
+        <main>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Enter TV series name...">
+                    <button id="searchBtn"><i class="fas fa-search"></i> Search</button>
+                </div>
+                
+                <div class="instructions">
+                    <p><strong>How to use:</strong></p>
+                    <ol>
+                        <li>Enter a TV series name (e.g. "Breaking Bad", "Game of Thrones")</li>
+                        <li>Click "Search" or press Enter</li>
+                        <li>Select a show from the results</li>
+                        <li>View seasons and episodes data in JSON format</li>
+                        <li>Copy the JSON using the button</li>
+                    </ol>
+                </div>
+                
+                <div id="message" class="message"></div>
+            </div>
+            
+            <div class="results-container">
+                <div class="shows-section">
+                    <h2><i class="fas fa-tv"></i> Search Results</h2>
+                    <div id="loading" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>Fetching TV shows...</p>
+                    </div>
+                    <div id="showsGrid" class="shows-grid"></div>
+                </div>
+                
+                <div class="json-section">
+                    <h2><i class="fas fa-code"></i> JSON Output</h2>
+                    <button id="copyBtn" class="copy-btn"><i class="fas fa-copy"></i> Copy JSON</button>
+                    <div id="jsonOutput" class="json-output">Search for a TV series and select a show to see its seasons and episodes data in JSON format.</div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Powered by TMDB API | TV Series Seasons & Episodes Fetcher</p>
+            <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_long_2-9665a76b1ae401a510ec1e0ca40ddcb3b0cfe45f1d51b77a308fea0845885648.svg" alt="TMDB Logo" class="tmdb-logo">
+        </footer>
+    </div>
+    
+    <script>
+        // TMDB API Configuration
+        const API_KEY = '9e7be42c1b75df5271d577d4b909b03e';
+        const API_BASE = 'https://api.themoviedb.org/3';
+        const IMG_PATH = 'https://image.tmdb.org/t/p/w500';
+        const DEFAULT_IMG = 'https://via.placeholder.com/500x750?text=No+Image';
+        
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const showsGrid = document.getElementById('showsGrid');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const copyBtn = document.getElementById('copyBtn');
+        const messageEl = document.getElementById('message');
+        const loadingEl = document.getElementById('loading');
+        
+        // State
+        let selectedShowId = null;
+        let tvShows = [];
+        
+        // Initialize
+        searchBtn.addEventListener('click', searchShows);
+        copyBtn.addEventListener('click', copyJSON);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') searchShows();
+        });
+        
+        // Search for TV shows
+        async function searchShows() {
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                showMessage('Please enter a TV series name', 'error');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                clearMessage();
+                
+                const url = `${API_BASE}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                tvShows = data.results;
+                
+                if (tvShows.length === 0) {
+                    showMessage('No TV shows found. Try another search.', 'error');
+                    showsGrid.innerHTML = '';
+                    return;
+                }
+                
+                displayShows(tvShows);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(`Error fetching shows: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display TV shows in grid
+        function displayShows(shows) {
+            showsGrid.innerHTML = '';
+            
+            shows.forEach(show => {
+                const showCard = document.createElement('div');
+                showCard.className = 'show-card';
+                showCard.innerHTML = `
+                    <img src="${show.poster_path ? IMG_PATH + show.poster_path : DEFAULT_IMG}" alt="${show.name}">
+                    <div class="show-info">
+                        <div class="show-title">${show.name}</div>
+                        <div class="show-year">${show.first_air_date ? show.first_air_date.substring(0,4) : 'N/A'}</div>
+                    </div>
+                `;
+                
+                showCard.addEventListener('click', () => {
+                    // Remove active class from all cards
+                    document.querySelectorAll('.show-card').forEach(card => {
+                        card.classList.remove('active');
+                    });
+                    
+                    // Add active class to selected card
+                    showCard.classList.add('active');
+                    
+                    // Fetch seasons for selected show
+                    fetchSeasons(show.id);
+                    selectedShowId = show.id;
+                });
+                
+                showsGrid.appendChild(showCard);
+            });
+        }
+        
+        // Format duration from minutes to "Xh Ym" format
+        function formatDuration(minutes) {
+            if (!minutes || minutes <= 0) return 'N/A';
+            
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            
+            let result = '';
+            if (hours > 0) {
+                result += `${hours}h`;
+            }
+            if (mins > 0) {
+                if (result) result += ' ';
+                result += `${mins}m`;
+            }
+            return result || '0m';
+        }
+        
+        // Fetch seasons and episodes for a show
+        async function fetchSeasons(showId) {
+            try {
+                showLoading(true);
+                clearMessage();
+                jsonOutput.textContent = 'Fetching seasons and episodes data...';
+                
+                // First get the show details to get number of seasons
+                const showUrl = `${API_BASE}/tv/${showId}?api_key=${API_KEY}`;
+                const showResponse = await fetch(showUrl);
+                
+                if (!showResponse.ok) {
+                    throw new Error(`API Error: ${showResponse.status}`);
+                }
+                
+                const showData = await showResponse.json();
+                const numberOfSeasons = showData.number_of_seasons;
+                
+                // Create the main structure
+                const seasonsData = {};
+                
+                // Fetch each season
+                for (let seasonNum = 1; seasonNum <= numberOfSeasons; seasonNum++) {
+                    const seasonUrl = `${API_BASE}/tv/${showId}/season/${seasonNum}?api_key=${API_KEY}`;
+                    const seasonResponse = await fetch(seasonUrl);
+                    
+                    if (!seasonResponse.ok) {
+                        console.error(`Failed to fetch season ${seasonNum}`);
+                        continue;
+                    }
+                    
+                    const seasonData = await seasonResponse.json();
+                    
+                    // Format the episodes
+                    const episodes = seasonData.episodes.map(episode => ({
+                        episodeNumber: episode.episode_number,
+                        title: episode.name,
+                        duration: formatDuration(episode.runtime),
+                        description: episode.overview || 'No description available',
+                        image: episode.still_path ? `https://image.tmdb.org/t/p/w500${episode.still_path}` : DEFAULT_IMG,
+                        videoUrl: ""
+                    }));
+                    
+                    // Add to seasons data
+                    seasonsData[seasonNum] = {
+                        season: seasonNum,
+                        episodes: episodes
+                    };
+                }
+                
+                // Format and display JSON
+                const formattedJSON = JSON.stringify(seasonsData, null, 2);
+                jsonOutput.textContent = formattedJSON;
+                showMessage('Data fetched successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching seasons:', error);
+                jsonOutput.textContent = 'Error fetching seasons and episodes data.';
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Copy JSON to clipboard
+        function copyJSON() {
+            const text = jsonOutput.textContent;
+            
+            if (!text || text === 'Search for a TV series and select a show to see its seasons and episodes data in JSON format.') {
+                showMessage('No JSON data to copy', 'error');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    showMessage('JSON copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    showMessage('Failed to copy JSON', 'error');
+                    console.error('Failed to copy: ', err);
+                });
+        }
+        
+        // Helper functions
+        function showMessage(msg, type) {
+            messageEl.textContent = msg;
+            messageEl.className = `message ${type} show`;
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+        
+        function clearMessage() {
+            messageEl.className = 'message';
+            messageEl.textContent = '';
+        }
+        
+        function showLoading(show) {
+            if (show) {
+                loadingEl.classList.remove('hidden');
+            } else {
+                loadingEl.classList.add('hidden');
+            }
+        }
+        
+        // Example JSON for initial display
+        const exampleJSON = {
+            "1": {
+                "season": 1,
+                "episodes": [
+                    {
+                        "episodeNumber": 1,
+                        "title": "Pilot",
+                        "duration": "58m",
+                        "description": "The first episode introduces the main characters and the central conflict.",
+                        "image": "https://image.tmdb.org/t/p/w500/example.jpg",
+                        "videoUrl": ""
+                    },
+                    {
+                        "episodeNumber": 2,
+                        "title": "Second Episode",
+                        "duration": "45m",
+                        "description": "The story continues as the characters face new challenges.",
+                        "image": "https://image.tmdb.org/t/p/w500/example2.jpg",
+                        "videoUrl": ""
+                    }
+                ]
+            },
+            "2": {
+                "season": 2,
+                "episodes": [
+                    {
+                        "episodeNumber": 1,
+                        "title": "Season Premiere",
+                        "duration": "1h 5m",
+                        "description": "The second season begins with a dramatic twist.",
+                        "image": "https://image.tmdb.org/t/p/w500/example3.jpg",
+                        "videoUrl": ""
+                    }
+                ]
+            }
+        };
+        
+        // Show example JSON on page load
+        jsonOutput.textContent = JSON.stringify(exampleJSON, null, 2);
+    </script>
+</body>
+</html>
